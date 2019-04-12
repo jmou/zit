@@ -1,0 +1,27 @@
+#!/usr/bin/python
+# usage differs from git hash-object
+
+# git1.0 hash-object.c sha1_file.c:write_sha1_file
+import hashlib
+import os
+import sys
+import zlib
+
+_, type, filename = sys.argv
+contents = open(filename).read()
+header = '{} {}\0'.format(type, len(contents))
+
+hasher = hashlib.sha1()
+hasher.update(header)
+hasher.update(contents)
+sha1 = hasher.hexdigest()
+
+sha1_filename = '.zit/objects/{}/{}'.format(sha1[:2], sha1[2:])
+dirname = os.path.dirname(sha1_filename)
+if not os.path.exists(dirname):
+    os.mkdir(dirname)
+
+compressed = zlib.compress(header + contents)
+open(sha1_filename, 'w').write(compressed)
+
+print sha1
