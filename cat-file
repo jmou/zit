@@ -1,0 +1,16 @@
+#!/usr/bin/python
+
+# git1.0 cat-file.c sha1_file.c:read_object_with_reference
+# TODO follow commit->tree and tag->object
+import sys
+import zlib
+
+required_type, sha1 = sys.argv[1:]
+# sha1_file.c:sha1_file_name
+filename = '.git/objects/{}/{}'.format(sha1[:2], sha1[2:])
+decompressed = zlib.decompress(open(filename).read())
+header, contents = decompressed.split('\0', 1)
+actual_type, length = header.split(' ')
+assert actual_type == required_type
+assert int(length) == len(contents)
+sys.stdout.write(contents)
