@@ -1,0 +1,36 @@
+#!/usr/bin/python
+
+# write-tree.c
+import struct
+import subprocess
+import sys
+
+# TODO write in C? do all macs have gcc?
+# TODO if cache doesn't exist?
+index = open('.zit/index').read()
+assert index[0:4] == 'DIRC'
+assert struct.unpack('>I', index[4:8]) == (2,)
+num_entries, = struct.unpack('>I', index[8:12])
+entries = []
+i = 12
+for _ in range(num_entries):
+    # ignore inode heuristics, file/symlink bit, permissions
+    i += 40
+    sha1 = index[i:i+20].encode('hex')
+    # just use NUL-terminated?
+    name_length = struct.unpack('>H', index[i+20:i+22])[0] & 0xfff
+    name = index[i+22:i+22+name_length]
+    i += (22 + name_length + 8) / 8 * 8
+    entries.append((name, sha1))
+
+# TODO write directories recursively? groupby?
+f = open('.zit/tree.tmp', 'w')
+for filename, sha1 in entries:
+    # TODO directories and file 755
+    f.write('100644 ') # file 644
+    f.write(filename)
+    f.write('\0')
+    f.write(bytearray.fromhex(sha1))
+f.close()
+
+subprocess.check_call(['./hash-object', 'tree', '.zit/tree.tmp'])
