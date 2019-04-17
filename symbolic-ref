@@ -1,0 +1,8 @@
+#!/bin/bash -e
+
+# refs.c:resolve_ref
+path=.zit/$1
+while grep -q '^ref: ' $path 2> /dev/null; do
+    path=.zit/$(cut -d' ' -f2 < $path)
+done
+echo $path | cut -d/ -f2-

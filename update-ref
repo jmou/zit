@@ -1,0 +1,7 @@
+#!/bin/bash -e
+
+path=.zit/$(./symbolic-ref $1)
+sha1=$(./rev-parse $2)
+# TODO initialize directory structure instead?
+mkdir -p $(dirname $path)
+echo $sha1 > $path

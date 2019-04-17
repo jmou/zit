@@ -1,0 +1,13 @@
+#!/bin/bash -e
+# only implements --verify
+
+# sha1_name.c:get_sha1
+
+if [[ ${#1} -eq 40 ]]; then
+    echo $1
+else
+    cat .zit/$(./symbolic-ref $1) 2> /dev/null || \
+        cat .zit/$(./symbolic-ref refs/$1) 2> /dev/null || \
+        cat .zit/$(./symbolic-ref refs/tags/$1) 2> /dev/null || \
+        cat .zit/$(./symbolic-ref refs/heads/$1)
+fi

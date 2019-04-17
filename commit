@@ -1,0 +1,10 @@
+#!/bin/bash -e
+
+# TODO unless this is the initial commit
+parents='-p HEAD'
+echo '# write a commit message' > .zit/COMMIT_EDITMSG
+vi .zit/COMMIT_EDITMSG
+tree=$(./write-tree)
+commit=$(grep -v '^#' .zit/COMMIT_EDITMSG | ./commit-tree $tree $parents)
+./update-ref HEAD $commit
+rm -f .zit/COMMIT_EDITMSG
