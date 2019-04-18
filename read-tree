@@ -1,0 +1,31 @@
+#!/usr/bin/python
+
+# read-tree.c:unpack_trees_rec
+import struct
+import subprocess
+import sys
+
+_, tree_sha1 = sys.argv
+tree = subprocess.check_output(['./cat-file', 'tree', tree_sha1])
+entries = []
+while tree:
+    header, rest = tree.split('\0', 1)
+    flags, filename = header.split(' ', 1)
+    rawsha1 = rest[:20]
+    tree = rest[20:]
+    # TODO handle directories
+    if flags != '040000':
+        entries.append((flags, filename, rawsha1))
+
+# TODO dedup with add. this handles flags
+f = open('.zit/index', 'w')
+f.write('DIRC')
+f.write(struct.pack('>II', 2, len(entries)))
+for flags, filename, rawsha1 in entries:
+    f.write('\0' * 24)
+    f.write(struct.pack('>I', int(flags, 8)))
+    f.write('\0' * 12)
+    f.write(rawsha1)
+    f.write(struct.pack('>H', len(filename)))
+    f.write(filename)
+    f.write('\0' * (8 - (len(filename) + 6) % 8))
