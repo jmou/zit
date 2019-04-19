@@ -25,7 +25,7 @@ for _ in range(num_entries):
 
 _, filename = sys.argv
 # TODO handle deleted files?
-sha1 = subprocess.check_output(['./hash-object', 'blob', filename]).strip()
+sha1 = subprocess.check_output(['hash-object', 'blob', filename]).strip()
 # TODO canonicalize filename?
 entries.append((filename, sha1))
 entries.sort()

@@ -33,4 +33,4 @@ for filename, sha1 in entries:
     f.write(bytearray.fromhex(sha1))
 f.close()
 
-subprocess.check_call(['./hash-object', 'tree', '.zit/tree.tmp'])
+subprocess.check_call(['hash-object', 'tree', '.zit/tree.tmp'])

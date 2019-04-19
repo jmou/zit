@@ -3,7 +3,7 @@
 echo tree $1 > .zit/commit.tmp
 shift
 while [[ $1 == -p ]]; do
-    parent=$(./rev-parse $2)
+    parent=$(rev-parse $2)
     echo parent $parent >> .zit/commit.tmp
     shift; shift
 done
@@ -12,4 +12,4 @@ echo committer "Joe Mou <joe@mou.fo> $(date +'%s %z')" >> .zit/commit.tmp
 echo >> .zit/commit.tmp
 cat >> .zit/commit.tmp
 
-./hash-object commit .zit/commit.tmp
+hash-object commit .zit/commit.tmp

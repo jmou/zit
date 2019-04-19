@@ -1,13 +1,13 @@
 #!/bin/bash -e
 
 if [[ $# -eq 0 ]]; then
-    headref=$(./symbolic-ref HEAD | sed -e 's|^refs/heads/||')
+    headref=$(symbolic-ref HEAD | sed -e 's|^refs/heads/||')
     echo "*$headref"
     cd .zit/refs/heads
     ls | grep -vxF $headref
 else
     branchname=$1
     startpoint=${2-HEAD}
-    rev=$(./rev-parse $startpoint)
-    ./update-ref refs/heads/$branchname $rev
+    rev=$(rev-parse $startpoint)
+    update-ref refs/heads/$branchname $rev
 fi

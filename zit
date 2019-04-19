@@ -1,0 +1,4 @@
+#!/bin/bash -e
+
+export PATH="${BASH_SOURCE%/*}:$PATH"
+exec "$@"

@@ -1,15 +1,15 @@
 #!/bin/bash -e
 
 if [[ $1 == -b ]]; then
-    ./branch $2
+    branch $2
     shift
 fi
 revision=$1
-tree=$(./rev-parse $revision^{tree})
-./read-tree $tree
-./checkout-index
+tree=$(rev-parse $revision^{tree})
+read-tree $tree
+checkout-index
 if [[ -f .zit/refs/heads/$revision ]]; then
-    ./symbolic-ref HEAD refs/heads/$revision
+    symbolic-ref HEAD refs/heads/$revision
 else
     echo "You are in 'detached HEAD' state." >&2
 fi

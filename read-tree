@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 _, tree_sha1 = sys.argv
-tree = subprocess.check_output(['./cat-file', 'tree', tree_sha1])
+tree = subprocess.check_output(['cat-file', 'tree', tree_sha1])
 entries = []
 while tree:
     header, rest = tree.split('\0', 1)

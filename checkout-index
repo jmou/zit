@@ -30,4 +30,4 @@ for filename, sha1 in entries:
         os.unlink(filename)
     subprocess.check_call(['mkdir', '-p', './' + os.path.dirname(filename)])
     # TODO git 1.0 doesn't seem to unlink deleted files
-    subprocess.check_call(['./cat-file', 'blob', sha1], stdout=open(filename, 'w'))
+    subprocess.check_call(['cat-file', 'blob', sha1], stdout=open(filename, 'w'))

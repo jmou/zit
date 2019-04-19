@@ -4,7 +4,7 @@
 parents='-p HEAD'
 echo '# write a commit message' > .zit/COMMIT_EDITMSG
 vi .zit/COMMIT_EDITMSG
-tree=$(./write-tree)
-commit=$(grep -v '^#' .zit/COMMIT_EDITMSG | ./commit-tree $tree $parents)
-./update-ref HEAD $commit
+tree=$(write-tree)
+commit=$(grep -v '^#' .zit/COMMIT_EDITMSG | commit-tree $tree $parents)
+update-ref HEAD $commit
 rm -f .zit/COMMIT_EDITMSG
