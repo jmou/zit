@@ -1,8 +1,13 @@
 #!/bin/bash -e
 
-# refs.c:resolve_ref
-path=.zit/$1
-while grep -q '^ref: ' $path 2> /dev/null; do
-    path=.zit/$(cut -d' ' -f2 < $path)
-done
-echo $path | cut -d/ -f2-
+if [[ $# == 2 ]]; then
+    # refs.c:create_symref
+    echo "ref: $2" > .zit/$1
+elif [[ $# == 1 ]]; then
+    # refs.c:resolve_ref
+    path=.zit/$1
+    while grep -q '^ref: ' $path 2> /dev/null; do
+        path=.zit/$(cut -d' ' -f2 < $path)
+    done
+    echo $path | cut -d/ -f2-
+fi

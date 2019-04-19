@@ -1,13 +1,40 @@
-#!/bin/bash -e
+#!/usr/bin/python
 # only implements --verify
 
-# sha1_name.c:get_sha1
+import subprocess
+import sys
 
-if [[ ${#1} -eq 40 ]]; then
-    echo $1
-else
-    cat .zit/$(./symbolic-ref $1) 2> /dev/null || \
-        cat .zit/$(./symbolic-ref refs/$1) 2> /dev/null || \
-        cat .zit/$(./symbolic-ref refs/tags/$1) 2> /dev/null || \
-        cat .zit/$(./symbolic-ref refs/heads/$1)
-fi
+# sha1_name.c:get_sha1
+def get_sha1(name):
+    # TODO ^ and ~?
+    # TODO specialize for tree?
+    if '^' in name:
+        name, type = name.rsplit('^', 1)
+        assert type[0] == '{' and type[-1] == '}'
+        type = type[1:-1]
+        while True:
+            sha1 = get_sha1(name)
+
+            # TODO dedup w/ cat-file
+            import zlib
+            # sha1_file.c:sha1_file_name
+            filename = '.zit/objects/{}/{}'.format(sha1[:2], sha1[2:])
+            decompressed = zlib.decompress(open(filename).read())
+            header, contents = decompressed.split('\0', 1)
+            actual_type, length = header.split(' ')
+
+            if actual_type == type:
+                return sha1
+            elif actual_type == 'commit':
+                assert int(length) == len(contents)
+                tree = next(line for line in contents.split('\n')
+                            if line.startswith('tree '))
+                name = tree.split(' ')[1]
+            # TODO deref tags?
+            else:
+                raise Exception('wrong type')
+    else:
+        return subprocess.check_output(['./get-sha1-basic', name])[:-1]
+
+_, name = sys.argv
+print get_sha1(name)
