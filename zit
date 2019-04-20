@@ -1,4 +1,4 @@
 #!/bin/bash -e
 
-export PATH="${BASH_SOURCE%/*}:$PATH"
+export PATH="$(cd "${BASH_SOURCE%/*}"; echo "$PWD"):$PATH"
 exec "$@"

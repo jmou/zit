@@ -1,7 +1,8 @@
 #!/bin/bash -e
 
-# TODO unless this is the initial commit
-parents='-p HEAD'
+if [[ -f .zit/$(symbolic-ref HEAD) ]]; then
+    parents='-p HEAD'
+fi
 echo '# write a commit message' > .zit/COMMIT_EDITMSG
 vi .zit/COMMIT_EDITMSG
 tree=$(write-tree)

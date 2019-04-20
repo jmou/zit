@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 # git1.0 cat-file.c sha1_file.c:read_object_with_reference
-# TODO follow commit->tree and tag->object
 import sys
 import zlib
 

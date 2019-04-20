@@ -1,43 +1,29 @@
 #!/usr/bin/python
 
 # update-index.c:add_file_to_cache
-import struct
+import os
 import subprocess
 import sys
 
-# TODO write in C? do all macs have gcc?
-# TODO if cache doesn't exist?
-index = open('.zit/index').read()
-assert index[0:4] == 'DIRC'
-assert struct.unpack('>I', index[4:8]) == (2,)
-num_entries, = struct.unpack('>I', index[8:12])
-entries = []
-i = 12
-for _ in range(num_entries):
-    # ignore inode heuristics, file/symlink bit, permissions
-    i += 40
-    sha1 = index[i:i+20].encode('hex')
-    # just use NUL-terminated?
-    name_length = struct.unpack('>H', index[i+20:i+22])[0] & 0xfff
-    name = index[i+22:i+22+name_length]
-    i += (22 + name_length + 8) / 8 * 8
-    entries.append((name, sha1))
+import index
 
-_, filename = sys.argv
-# TODO handle deleted files?
-sha1 = subprocess.check_output(['hash-object', 'blob', filename]).strip()
-# TODO canonicalize filename?
-entries.append((filename, sha1))
+filenames = subprocess.check_output(['find'] + sys.argv[1:] + ['!', '-type', 'd']).splitlines()
+entries = index.read_index()
+for filename in filenames:
+    entries = [e for e in entries if e[0] != filename]
+    if os.path.exists(filename):
+        if os.path.islink(filename):
+            mode = 0120000
+            with open('.zit/blob.tmp', 'w') as f:
+                f.write(os.readlink(filename))
+            sha1 = subprocess.check_output(['hash-object', 'blob', '.zit/blob.tmp']).strip()
+        else:
+            if os.access(filename, os.X_OK):
+                mode = 0100755
+            else:
+                mode = 0100644
+            sha1 = subprocess.check_output(['hash-object', 'blob', filename]).strip()
+        entries.append((filename, mode, bytearray.fromhex(sha1)))
 entries.sort()
 
-f = open('.zit/index', 'w')
-f.write('DIRC')
-f.write(struct.pack('>II', 2, len(entries)))
-for filename, sha1 in entries:
-    f.write('\0' * 24)
-    f.write(struct.pack('>I', 0b1000000110100100)) # file 644
-    f.write('\0' * 12)
-    f.write(bytearray.fromhex(sha1))
-    f.write(struct.pack('>H', len(filename)))
-    f.write(filename)
-    f.write('\0' * (8 - (len(filename) + 6) % 8))
+index.write_index(entries)

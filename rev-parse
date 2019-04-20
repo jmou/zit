@@ -27,7 +27,7 @@ def get_sha1(name):
                 return sha1
             elif actual_type == 'commit':
                 assert int(length) == len(contents)
-                tree = next(line for line in contents.split('\n')
+                tree = next(line for line in contents.splitlines()
                             if line.startswith('tree '))
                 name = tree.split(' ')[1]
             # TODO deref tags?

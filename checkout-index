@@ -1,33 +1,20 @@
 #!/usr/bin/python
 
 import os
-import struct
 import subprocess
 
-# TODO dedup w/ write-tree
-index = open('.zit/index').read()
-assert index[0:4] == 'DIRC'
-assert struct.unpack('>I', index[4:8]) == (2,)
-num_entries, = struct.unpack('>I', index[8:12])
-entries = []
-i = 12
-for _ in range(num_entries):
-    # ignore inode heuristics, file/symlink bit, permissions
-    i += 40
-    sha1 = index[i:i+20].encode('hex')
-    # just use NUL-terminated?
-    name_length = struct.unpack('>H', index[i+20:i+22])[0] & 0xfff
-    name = index[i+22:i+22+name_length]
-    i += (22 + name_length + 8) / 8 * 8
-    entries.append((name, sha1))
+import index
 
+entries = index.read_index()
 # entry.c:checkout_entry
-for filename, sha1 in entries:
+for filename, mode, sha1 in entries:
     assert not filename.startswith('/')
     assert '..' not in filename
-    # TODO unlink directories?
-    if os.path.exists(filename):
-        os.unlink(filename)
     subprocess.check_call(['mkdir', '-p', './' + os.path.dirname(filename)])
     # TODO git 1.0 doesn't seem to unlink deleted files
-    subprocess.check_call(['cat-file', 'blob', sha1], stdout=open(filename, 'w'))
+    subprocess.check_call(['cat-file', 'blob', sha1.encode('hex')], stdout=open(filename, 'w'))
+    if mode == 0100755:
+        os.chmod(filename, 0755)
+    elif mode == 0120000:
+        target = open(filename).read()
+        os.symlink(target, filename)
