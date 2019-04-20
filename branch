@@ -5,6 +5,8 @@ if [[ $# -eq 0 ]]; then
     echo "*$headref"
     cd .zit/refs/heads
     ls | grep -vxF $headref
+elif [[ $1 == -d ]]; then
+    rm -f .zit/refs/heads/$2
 else
     branchname=$1
     startpoint=${2-HEAD}
