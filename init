@@ -3,6 +3,7 @@
 mkdir -p "$1/.zit/objects"
 echo 'ref: refs/heads/master' > "$1/.zit/HEAD"
 
+# for git compatibility
 ln -s .zit "$1/.git"
 mkdir "$1/.git/info"
 echo .zit > "$1/.git/info/exclude"

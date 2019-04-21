@@ -11,5 +11,7 @@ checkout-index
 if [[ -f .zit/refs/heads/$revision ]]; then
     symbolic-ref HEAD refs/heads/$revision
 else
+    rev-parse $revision > .zit/HEAD.tmp
+    mv .zit/HEAD.tmp .zit/HEAD
     echo "You are in 'detached HEAD' state." >&2
 fi

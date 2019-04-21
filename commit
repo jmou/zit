@@ -1,6 +1,6 @@
 #!/bin/bash -e
 
-if [[ -f .zit/$(symbolic-ref HEAD) ]]; then
+if [[ -f .zit/$(symbolic-ref HEAD) ]]; then # for non-initial commit
     parents='-p HEAD'
 fi
 echo '# write a commit message' > .zit/COMMIT_EDITMSG

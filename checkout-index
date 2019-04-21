@@ -13,8 +13,10 @@ for filename, mode, sha1 in entries:
     subprocess.check_call(['mkdir', '-p', './' + os.path.dirname(filename)])
     # TODO git 1.0 doesn't seem to unlink deleted files
     subprocess.check_call(['cat-file', 'blob', sha1.encode('hex')], stdout=open(filename, 'w'))
-    if mode == 0100755:
+    if mode == 0100755: # for executable files
         os.chmod(filename, 0755)
-    elif mode == 0120000:
+    elif mode == 0120000: # for symlinks
         target = open(filename).read()
+        if os.path.exists(filename):
+            os.unlink(filename)
         os.symlink(target, filename)

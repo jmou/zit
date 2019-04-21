@@ -6,15 +6,15 @@ import sys
 
 # sha1_name.c:get_sha1
 def get_sha1(name):
-    if name[-2] == '~':
+    if name[-2] == '~': # for ~
         name = name[:-2] + '^' * int(name[-1])
-    if name[-1] == '^':
+    if name[-1] == '^': # for ^
         sha1 = get_sha1(name[:-1])
         contents = subprocess.check_output(['cat-file', 'commit', sha1])
         parent = next(line for line in contents.splitlines()
                       if line.startswith('parent '))
         return parent.split(' ')[1]
-    if '^{' in name:
+    if '^{' in name: # for ^{type}
         name, requested_type = name.rsplit('^{', 1)
         assert requested_type[-1] == '}'
         requested_type = requested_type[:-1]

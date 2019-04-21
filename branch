@@ -1,7 +1,7 @@
 #!/bin/bash -e
 
 if [[ $# -eq 0 ]]; then
-    headref=$(symbolic-ref HEAD | sed -e 's|^refs/heads/||')
+    headref=$(symbolic-ref HEAD | sed -e 's|^refs/heads/||') # for current branch
     echo "*$headref"
     cd .zit/refs/heads
     ls | grep -vxF $headref

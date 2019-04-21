@@ -7,18 +7,18 @@ import sys
 
 import index
 
-filenames = subprocess.check_output(['find'] + sys.argv[1:] + ['!', '-type', 'd']).splitlines()
+filenames = subprocess.check_output(['find'] + sys.argv[1:] + ['!', '-type', 'd']).splitlines() # for directories
 entries = index.read_index()
 for filename in filenames:
     entries = [e for e in entries if e[0] != filename]
     if os.path.exists(filename):
-        if os.path.islink(filename):
+        if os.path.islink(filename): # for symlinks
             mode = 0120000
             with open('.zit/blob.tmp', 'w') as f:
                 f.write(os.readlink(filename))
             sha1 = subprocess.check_output(['hash-object', 'blob', '.zit/blob.tmp']).strip()
         else:
-            if os.access(filename, os.X_OK):
+            if os.access(filename, os.X_OK): # for executable files
                 mode = 0100755
             else:
                 mode = 0100644
