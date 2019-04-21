@@ -4,7 +4,7 @@ if [[ -f .zit/$(symbolic-ref HEAD) ]]; then
     parents='-p HEAD'
 fi
 echo '# write a commit message' > .zit/COMMIT_EDITMSG
-vi .zit/COMMIT_EDITMSG
+${EDITOR-vi} .zit/COMMIT_EDITMSG
 tree=$(write-tree)
 commit=$(grep -v '^#' .zit/COMMIT_EDITMSG | commit-tree $tree $parents)
 update-ref HEAD $commit

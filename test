@@ -1,0 +1,113 @@
+#!/bin/bash -ex
+
+header() {
+    echo -e "\n\e[32m$@\e[0m"
+}
+
+get_md5() {
+    if type md5sum &> /dev/null; then
+        md5sum $1 | cut -d' ' -f1
+    else
+        md5 -s $1
+    fi
+}
+
+header 'Initializing repo... [zit, init]'
+trap 'echo -e "\e[31mFAIL\e[0m"' ERR
+repo="$PWD/test.tmp"
+rm -rf "$repo"
+zit init "$repo"
+[[ $1 != --keep ]] && trap 'rm -rf "$repo"' EXIT
+cd "$repo"
+[[ $(<.zit/HEAD) == 'ref: refs/heads/master' ]]
+
+header 'Writing a blob object... [hash-object]'
+echo "I'm a little teapot" > lullaby
+[[ $(zit hash-object blob lullaby) == 3eb7f9afc452afe452b99d478d89264380622248 ]]
+
+header 'Reading an object... [cat-file]'
+[[ $(zit cat-file -t 3eb7f9afc452afe452b99d478d89264380622248 ) == blob ]]
+[[ $(zit cat-file blob 3eb7f9afc452afe452b99d478d89264380622248 ) == "I'm a little teapot" ]]
+
+header 'Writing to the index... [index.py]'
+PYTHONPATH=.. /usr/bin/python -c 'import index; index.write_index([("lullaby", 0100644, "\x3e\xb7\xf9\xaf\xc4\x52\xaf\xe4\x52\xb9\x9d\x47\x8d\x89\x26\x43\x80\x62\x22\x48")])'
+[[ $(get_md5 .zit/index) == 06432001fc95f78cd6353321f7c95009 ]]
+
+header 'Adding a file to the index... [add]'
+echo here > handle
+zit add handle
+[[ $(zit cat-file blob 012ea92e81171f5ef7486696878656c5263cf722 ) == here ]]
+[[ $(get_md5 .zit/index) == 61728e18ee75d24576d9ea2b626fb1ff ]]
+
+header 'Reading the index... [index.py]'
+[[ $(PYTHONPATH=.. /usr/bin/python -c 'import index; print index.read_index()') == "[('handle', 33188, '\x01.\xa9.\x81\x17\x1f^\xf7Hf\x96\x87\x86V\xc5&<\xf7\"'), ('lullaby', 33188, '>\xb7\xf9\xaf\xc4R\xaf\xe4R\xb9\x9dG\x8d\x89&C\x80b\"H')]" ]]
+
+header 'Writing the index to a tree object... [write-tree]'
+initial_tree=$(zit write-tree)
+[[ $initial_tree == f65ccd4f10cb3416c7be6601bafd2371a784054f ]]
+
+header 'Writing an initial commit object... [commit-tree]'
+export ZIT_AUTHOR_NAME='Miss Teapot' ZIT_AUTHOR_EMAIL=miss@tea.spot
+initial_commit=$(echo initial commit | zit commit-tree $initial_tree)
+[[ $(zit cat-file commit $initial_commit ) =~ ^"tree $initial_tree
+author Miss Teapot <miss@tea.spot> "[0-9]*\ [+-][0-9]{4}"
+committer Miss Teapot <miss@tea.spot> "[0-9]*\ [+-][0-9]{4}"
+
+initial commit"$ ]]
+
+header 'Create a branch ref [update-ref]'
+zit update-ref refs/heads/initial $initial_commit
+[[ $(<.zit/refs/heads/initial) == $initial_commit ]]
+
+header 'Read HEAD symbolic ref [symbolic-ref]'
+[[ $(zit symbolic-ref HEAD) == refs/heads/master ]]
+
+header 'Birth master branch [update-ref, get-sha1-basic, rev-parse]'
+zit update-ref HEAD $initial_commit
+[[ $(zit rev-parse HEAD) == $initial_commit ]]
+
+header 'Delete and create a branch [branch]'
+zit branch -d initial
+[[ ! -f .zit/refs/heads/initial ]]
+zit branch initial
+[[ $(<.zit/refs/heads/initial) == $initial_commit ]]
+
+header 'Writing another commit object... [commit, commit-tree]'
+echo 'short and stout' > lullaby
+zit add lullaby
+echo 'second verse' | EDITOR=tee zit commit > /dev/null
+second_tree=3c1bea2d45d260a3836794e04a4bbef34e3c2459
+[[ $(zit cat-file commit $(zit rev-parse HEAD) ) =~ ^"tree $second_tree
+parent $initial_commit
+author Miss Teapot <miss@tea.spot> "[0-9]*\ [+-][0-9]{4}"
+committer Miss Teapot <miss@tea.spot> "[0-9]*\ [+-][0-9]{4}"
+
+second verse"$ ]]
+
+header 'Parse ^ and ~ revisions [rev-parse]'
+[[ $(zit rev-parse HEAD^) == $initial_commit ]]
+[[ $(zit rev-parse HEAD~1) == $initial_commit ]]
+[[ $(zit rev-parse initial~0) == $initial_commit ]]
+
+header 'Parse ^{type} revisions [rev-parse]'
+[[ $(zit rev-parse HEAD^{tree}) == $second_tree ]]
+[[ $(zit rev-parse HEAD^^{tree}) == $initial_tree ]]
+
+header 'Reading tree object into the index... [read-tree]'
+zit read-tree $initial_tree
+[[ $(get_md5 .zit/index) == 61728e18ee75d24576d9ea2b626fb1ff ]]
+
+header 'Checkout from the index [checkout-index]'
+zit checkout-index
+[[ $(<lullaby) == "I'm a little teapot" ]]
+
+header 'Update HEAD symbolic ref [symbolic-ref]'
+zit symbolic-ref HEAD refs/heads/initial
+[[ $(<.zit/HEAD) == 'ref: refs/heads/initial' ]]
+
+header 'Checkout master branch [checkout]'
+zit checkout master
+[[ $(<lullaby) == 'short and stout' ]]
+[[ $(<.zit/HEAD) == 'ref: refs/heads/master' ]]
+
+header PASS
