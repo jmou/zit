@@ -6,35 +6,32 @@ import sys
 
 # sha1_name.c:get_sha1
 def get_sha1(name):
-    # TODO ^ and ~?
-    # TODO specialize for tree?
-    if '^' in name:
-        name, type = name.rsplit('^', 1)
-        assert type[0] == '{' and type[-1] == '}'
-        type = type[1:-1]
+    if name[-2] == '~':
+        name = name[:-2] + '^' * int(name[-1])
+    if name[-1] == '^':
+        sha1 = get_sha1(name[:-1])
+        contents = subprocess.check_output(['cat-file', 'commit', sha1])
+        parent = next(line for line in contents.splitlines()
+                      if line.startswith('parent '))
+        return parent.split(' ')[1]
+    if '^{' in name:
+        name, requested_type = name.rsplit('^{', 1)
+        assert requested_type[-1] == '}'
+        requested_type = requested_type[:-1]
         while True:
             sha1 = get_sha1(name)
-
-            # TODO dedup w/ cat-file
-            import zlib
-            # sha1_file.c:sha1_file_name
-            filename = '.zit/objects/{}/{}'.format(sha1[:2], sha1[2:])
-            decompressed = zlib.decompress(open(filename).read())
-            header, contents = decompressed.split('\0', 1)
-            actual_type, length = header.split(' ')
-
-            if actual_type == type:
+            actual_type = subprocess.check_output(['cat-file', '-t', sha1]).strip()
+            if actual_type == requested_type:
                 return sha1
             elif actual_type == 'commit':
-                assert int(length) == len(contents)
+                contents = subprocess.check_output(['cat-file', 'commit', sha1])
                 tree = next(line for line in contents.splitlines()
                             if line.startswith('tree '))
                 name = tree.split(' ')[1]
-            # TODO deref tags?
             else:
                 raise Exception('wrong type')
     else:
-        return subprocess.check_output(['get-sha1-basic', name])[:-1]
+        return subprocess.check_output(['get-sha1-basic', name]).strip()
 
 _, name = sys.argv
 print get_sha1(name)

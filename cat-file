@@ -10,6 +10,10 @@ filename = '.zit/objects/{}/{}'.format(sha1[:2], sha1[2:])
 decompressed = zlib.decompress(open(filename).read())
 header, contents = decompressed.split('\0', 1)
 actual_type, length = header.split(' ')
-assert actual_type == required_type
+
 assert int(length) == len(contents)
-sys.stdout.write(contents)
+if required_type == '-t':
+    print actual_type
+else:
+    assert actual_type == required_type
+    sys.stdout.write(contents)
