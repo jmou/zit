@@ -5,14 +5,29 @@ import subprocess
 
 import index
 
-entries = index.read_index()
-# TODO write directories recursively? groupby?
-f = open('.zit/tree.tmp', 'w')
-for filename, mode, rawsha1 in entries:
-    f.write('{:o} '.format(mode))
-    f.write(filename)
-    f.write('\0')
-    f.write(rawsha1)
-f.close()
+def write_tree(entries, base):
+    i = 0
+    buf = ''
+    while i < len(entries):
+        filename, mode, rawsha1 = entries[i]
 
-subprocess.check_call(['hash-object', 'tree', '.zit/tree.tmp'])
+        # for directories
+        if not filename.startswith(base):
+            break
+        filename = filename[len(base):]
+        if '/' in filename:
+            filename = filename.split('/', 1)[0]
+            num_written, sha1 = write_tree(entries[i:], base + filename + '/')
+            i += num_written
+            i -= 1 # write the directory entry, but don't count it
+            mode = 040000
+            rawsha1 = bytearray.fromhex(sha1)
+
+        buf += '{:o} {}\0{}'.format(mode, filename, rawsha1)
+        i += 1
+    with open('.zit/tree.tmp', 'w') as f:
+        f.write(buf)
+    return i, subprocess.check_output(['hash-object', 'tree', '.zit/tree.tmp']).strip()
+
+_, sha1 = write_tree(index.read_index(), '')
+print sha1

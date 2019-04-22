@@ -117,20 +117,34 @@ header 'Checkout detached HEAD [checkout]'
 $ZIT checkout HEAD
 [[ $(<.zit/HEAD) == $second_commit ]]
 
-header 'Commit executable file, symlink, and directory [add]'
+header 'Commit executable file, symlink [add]'
 chmod +x handle
-mkdir and
-ln -s ../handle and/spout
-git add handle and/spout
+ln -s handle spout
+git add handle spout
 EDITOR=tee $ZIT commit <<< 'first stanza' > /dev/null
-[[ $($ZIT rev-parse HEAD^{tree}) == 6a8ad12fa34d4f1ea64abb28c8ae143b1e8fde40 ]]
+[[ $($ZIT rev-parse HEAD^{tree}) == 32b256d0e79f6c2a3ccca5ef6bd67aa7b37fc6eb ]]
 
 header 'Checkout a new branch [checkout, checkout-index]'
-rm -rf handle and
+rm -f handle spout
 $ZIT checkout -b stanza
 [[ $(<.zit/HEAD) == 'ref: refs/heads/stanza' ]]
 [[ -x handle ]]
-[[ $(python -c 'import os; print os.readlink("and/spout")') == ../handle ]]
+[[ $(python -c 'import os; print os.readlink("spout")') == handle ]]
+
+header 'Commit directory [write-tree]'
+mkdir stanza2
+echo 'When I get all steamed up' > stanza2/line1
+echo 'hear me shout' > stanza2/line2
+echo 'tip me over and pour me out' > stanza2/line3
+git add stanza2
+EDITOR=tee $ZIT commit <<< 'second stanza' > /dev/null
+[[ $($ZIT rev-parse HEAD^{tree}) == 211fce66889894e23c9d710e2ae9df93066be410 ]]
+
+header 'Checkout a new branch [checkout, checkout-index]'
+rm -rf stanza
+$ZIT checkout stanza
+[[ $(<.zit/HEAD) == 'ref: refs/heads/stanza' ]]
+[[ $(<stanza2/line1) == 'When I get all steamed up' ]]
 
 [[ -n $keep ]] || { rm -rf "$repo"; trap '' EXIT; }
 header PASS

@@ -7,16 +7,19 @@ import sys
 
 import index
 
-_, tree_sha1 = sys.argv
-tree = subprocess.check_output(['cat-file', 'tree', tree_sha1])
-entries = []
-while tree:
-    header, rest = tree.split('\0', 1)
-    mode, filename = header.split(' ', 1)
-    rawsha1 = rest[:20]
-    tree = rest[20:]
-    # TODO handle directories
-    if mode != '040000':
-        entries.append((filename, int(mode, 8), rawsha1))
+def unpack_trees(tree_sha1, base):
+    tree = subprocess.check_output(['cat-file', 'tree', tree_sha1])
+    entries = []
+    while tree:
+        header, rest = tree.split('\0', 1)
+        mode, filename = header.split(' ', 1)
+        rawsha1 = rest[:20]
+        tree = rest[20:]
+        if mode == '40000': # for directories
+            entries += unpack_trees(rawsha1.encode('hex'), filename + '/')
+        else:
+            entries.append((base + filename, int(mode, 8), rawsha1))
+    return entries
 
-index.write_index(entries)
+_, tree_sha1 = sys.argv
+index.write_index(unpack_trees(tree_sha1, ''))
