@@ -1,0 +1,143 @@
+THIS WILL EAT YOUR DATA AND NOT APOLOGIZE FOR TALKING WHILE CHEWING.
+Probably not but this is not a robust implementation of git so don't let it out
+on your important code.
+
+////////////////////////////////////////////////////////////////
+
+	ZIT - the imitation stupid content tracker
+
+////////////////////////////////////////////////////////////////
+"zit" can mean anything, depending on your mood.
+
+ - random three-letter combination that is pronounceable, and not
+   actually used by any common UNIX command.
+ - embarassing. ugly and greasy. adolescence. Take your pick from the
+   dictionary of slang.
+ - "zero git": you're in a good mood, and it actually helps you
+   understand git. Angels sing, and a light suddenly fills the room.
+ - "zuuuuuuuugh, idiotic truckload of sh*t": when it breaks
+
+How to use this
+~~~~~~~~~~~~~~~
+
+zit is not intended to be "well written" code. It intentionally avoids any
+significant refactoring (like functions) or error handling. It tries in many
+ways to be like git: imperfect but simple. Instead zit is meant to be a terse
+implementation to help demystify git.
+
+Poke around the code and even try writing it yourself. One strategy is to
+delete all the files except for test and try to implement files one-by-one to
+get `zit test` to pass.
+
+Most of the files are named after actual git commands, so you can use git help
+to read relevant documentation.
+
+The zit code is structured similarly to git v1.0.
+https://github.com/git/git/tree/v1.0.13
+
+git storytime
+~~~~~~~~~~~~~
+
+To understand git is to understand the circumstances that gave it rise.
+
+https://jmou.github.io/rc-git-storytime/ (press `p` for rough notes)
+
+    "Git is a weekend hack which looks like a weekend hack." --Bram Cohen
+    https://wincent.com/blog/a-look-back-bram-cohen-vs-linus-torvalds
+
+git cared a lot about performance, and it had to be developed quickly.
+Usability, and even being useful for version control, were far out of mind.
+
+Learning from git
+~~~~~~~~~~~~~~~~~
+
+Why should we bother learning about git or how it works?
+
+    "Study your successes . . . not only yours but other people's. Why did
+    Galileo do what he did? How did Newton do it? Try as best you can to study
+    other people, how they succeed, what were the elements of their success,
+    which elements of that can you adapt to your personality. You can't be
+    everybody but you have to find your own method, and studying success is a
+    very good way of forming your own style." --John Hamming
+    "You and Your Research" https://www.youtube.com/watch?v=a1zDuOPkMSw
+
+git has an inconsistent UI and competing tools are better implemented.
+
+    "The worse-is-better software first will gain acceptance, second will
+    condition its users to expect less, and third will be improved to a point
+    that is almost the right thing." --Richard Gabriel
+    "Worse is Better" https://www.jwz.org/doc/worse-is-better.html
+
+    (Most "clever" git features were implemented /primarily/ because they were
+    easy to write: bisect, staging, reflog, add -p, rebase -i)
+
+git misconceptions
+~~~~~~~~~~~~~~~~~~
+
+    "It's not an SCM, it's a distribution and archival mechanism. I bet you
+    could make a reasonable SCM on top of it, though." --Linus Torvalds
+    http://lkml.iu.edu/hypermail/linux/kernel/0504.0/2022.html
+
+(SCM is "source code management"; today we might say VCS or version control.)
+
+git was created for a very narrow problem that was specific to Linus' workflow
+of managing hundreds of patch sets at a time. It was built from the ground up,
+starting with efficient data representations, and as features were added it
+came to look more and more like a full version control system for developers.
+
+- Storing a DAG with lots of inter relationships in
+  filesystem was unorthodox. No one used an index. Monotone preceded git, uses
+  sqlite
+
+git design points
+~~~~~~~~~~~~~~~~~
+
+- The filesystem is a database. .git/objects is a simple key-value store where
+  the filename is the key. The first two hex characters are the directory name,
+  effectively splitting the keyspace into 256 buckets. This simple optimization
+  benefits any programs that perform poorly on directories with many files.
+- Plumbing vs porcelain. git started as a tool chest of low level commands,
+  or plumbing. Higher level commands were eventually written building on top of
+  plumbing; the commands that users were expected to use were called porcelain.
+  The only difference between plumbing and porcelain was convention, and it was
+  easy to develop git organically. Since git was composed of many distinct
+  commands, it naturally became polyglot (mostly a mix of C, bash, and perl);
+  today most of it has been rewritten in C for performance and portability.
+- The index (sometimes called staging or the directory cache) conceptually
+  intermediates between git's object storage and your checked out files.
+  Namely:
+  - The index can be used to generate a complete tree object without reading
+    any other files.
+  - The index can be efficiently compared with files as you modify them to find
+    what is out of date.
+
+Other things to check out
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+From Recurse Center folks!
+- git-hydra (delightful repo visualization): https://github.com/blinry/git-hydra
+- In-depth git explanation: https://maryrosecook.com/blog/post/git-from-the-inside-out
+
+Many features are not implemented but can be interesting to learn more about.
+- tags
+- packfiles
+- reflog (TODO implement this?)
+- fetch/pull/push and remote tracking branches (TODO implement this?)
+- diffing and merging
+- rebase
+
+Mercurial is another distributed version control system that places much more
+value on being intuitive. Read about the differences from their perspective.
+https://www.mercurial-scm.org/wiki/GitConcepts
+
+git's documentation is surprisingly approachable and informal (if a bit
+disorganized). Leaf through and read about anything that sounds interesting.
+https://github.com/git/git/tree/master/Documentation/technical
+
+A dozen reads of "Git for Computer Scientists" is when git "clicked" for me.
+https://eagain.net/articles/git-for-computer-scientists/
+
+Well-written history and technical explanation of git from "The Architecture
+of Open Source Applications": https://www.aosabook.org/en/git.html
+
+Early article on git written well before v1.0: https://lwn.net/Articles/131657/

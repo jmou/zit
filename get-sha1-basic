@@ -1,4 +1,5 @@
 #!/bin/bash -e
+# this is not an actual git subcommand but implements a C function
 
 # sha1_name.c:get_sha1_basic
 if [[ ${#1} -eq 40 ]]; then

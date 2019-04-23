@@ -1,0 +1,14 @@
+digraph G {
+    add -> { "index.py" "hash-object" };
+    "write-tree" -> { "index.py" "hash-object" };
+    commit -> { "write-tree" "commit-tree" "update-ref" };
+    "commit-tree" -> { "rev-parse" "hash-object" };
+    "update-ref" -> { "symbolic-ref" "rev-parse" };
+    branch -> { "update-ref" "symbolic-ref" };
+    checkout -> { "rev-parse" "read-tree" "checkout-index" "symbolic-ref" };
+    "rev-parse" -> { "get-sha1-basic" "cat-file" };
+    "checkout-index" -> { "index.py" "cat-file" };
+    init;
+    reset -> { "read-tree" "update-ref" };
+    "read-tree" -> "index.py";
+}
