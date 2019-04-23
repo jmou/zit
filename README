@@ -27,7 +27,10 @@ implementation to help demystify git.
 
 Poke around the code and even try writing it yourself. One strategy is to
 delete all the files except for test and try to implement files one-by-one to
-get `zit test` to pass.
+get `zit test` to pass. The test script can run against your implementation of
+zit; for example if you are writing it in your current directory:
+
+    $ /path/to/jmou/zit/test ./zit
 
 Most of the files are named after actual git commands, so you can use git help
 to read relevant documentation.
