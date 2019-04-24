@@ -74,24 +74,6 @@ git has an inconsistent UI and competing tools are better implemented.
     (Most "clever" git features were implemented /primarily/ because they were
     easy to write: bisect, staging, reflog, add -p, rebase -i)
 
-git misconceptions
-~~~~~~~~~~~~~~~~~~
-
-    "It's not an SCM, it's a distribution and archival mechanism. I bet you
-    could make a reasonable SCM on top of it, though." --Linus Torvalds
-    http://lkml.iu.edu/hypermail/linux/kernel/0504.0/2022.html
-
-(SCM is "source code management"; today we might say VCS or version control.)
-
-git was created for a very narrow problem that was specific to Linus' workflow
-of managing hundreds of patch sets at a time. It was built from the ground up,
-starting with efficient data representations, and as features were added it
-came to look more and more like a full version control system for developers.
-
-- Storing a DAG with lots of inter relationships in
-  filesystem was unorthodox. No one used an index. Monotone preceded git, uses
-  sqlite
-
 git design points
 ~~~~~~~~~~~~~~~~~
 
@@ -114,6 +96,27 @@ git design points
   - The index can be efficiently compared with files as you modify them to find
     what is out of date.
 
+git personality quirks
+~~~~~~~~~~~~~~~~~~~~~~
+
+    "It's not an SCM, it's a distribution and archival mechanism. I bet you
+    could make a reasonable SCM on top of it, though." --Linus Torvalds
+    http://lkml.iu.edu/hypermail/linux/kernel/0504.0/2022.html
+
+(SCM is "source code management"; today we might say VCS or version control.)
+
+git was created for a very narrow problem that was specific to Linus' workflow
+of managing hundreds of patch sets at a time. It was built from the ground up,
+starting with efficient data representations, and as features were added it
+came to look more and more like a full version control system for developers.
+
+git is not shy about its implementation details. For example, the index was
+implemented very early on in git as a performance optimization, so that
+generating tree objects would not need to re-read every source file. While
+other distributed version control systems like Mercurial chose not to expose
+any such representation to users, git instead embraced the index and rebranded
+it from its inception as a "directory cache" into a "staging area."
+
 Other things to check out
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -126,8 +129,12 @@ Many features are not implemented but can be interesting to learn more about.
 - packfiles
 - reflog (TODO implement this?)
 - fetch/pull/push and remote tracking branches (TODO implement this?)
+- stash (TODO implement this?)
 - diffing and merging
 - rebase
+
+The "Building Git" book takes a similar approach to learning git much further.
+https://shop.jcoglan.com/building-git/
 
 Mercurial is another distributed version control system that places much more
 value on being intuitive. Read about the differences from their perspective.
