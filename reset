@@ -1,0 +1,6 @@
+#!/bin/bash -e
+# only implements --mixed
+# TODO write a test
+
+read-tree $1
+update-ref HEAD $1
