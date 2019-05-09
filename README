@@ -2,6 +2,8 @@ THIS WILL EAT YOUR DATA AND NOT APOLOGIZE FOR TALKING WHILE CHEWING.
 Probably not but this is not a robust implementation of git so don't let it out
 on your important code.
 
+This code is released into the public domain.
+
 ////////////////////////////////////////////////////////////////
 
 	ZIT - the imitation stupid content tracker
@@ -37,6 +39,9 @@ to read relevant documentation.
 
 The zit code is structured similarly to git v1.0.
 https://github.com/git/git/tree/v1.0.13
+
+Also it may be helpful to reference commands.png which diagrams the
+dependencies between zit subcommands.
 
 git storytime
 ~~~~~~~~~~~~~

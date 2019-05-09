@@ -8,7 +8,7 @@ import index
 entries = index.read_index()
 # entry.c:checkout_entry
 for filename, mode, sha1 in entries:
-    assert not filename.startswith('/')
+    assert not filename.startswith('/') # basic safety checks
     assert '..' not in filename
     subprocess.check_call(['mkdir', '-p', './' + os.path.dirname(filename)])
     # TODO git 1.0 doesn't seem to unlink deleted files

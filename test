@@ -1,4 +1,5 @@
 #!/bin/bash -ex
+# TODO make compatible with actual git, probably by accepting compatible flags
 
 header() {
     echo -e "\n\033[32m$@\033[0m"
